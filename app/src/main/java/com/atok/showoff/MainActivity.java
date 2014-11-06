@@ -1,15 +1,25 @@
 package com.atok.showoff;
 
 import android.app.Activity;
+import android.content.Intent;
+
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+import com.atok.showoff.flickr.FlickrPhotos;
+import com.atok.showoff.flickr.FlickrResponse;
+
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+
+import static timber.log.Timber.*;
 
 public class MainActivity extends Activity {
 
     private RecyclerView mRecyclerView;
-    private RecyclerView.Adapter mAdapter;
+    private MyAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
 
     @Override
@@ -28,8 +38,36 @@ public class MainActivity extends Activity {
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         // specify an adapter (see also next example)
-        mAdapter = new MyAdapter(new String[]{"ala", "ma", "kota"});
+        mAdapter = new MyAdapter();
+        mAdapter.addMenuItems(
+                new MainMenuItem("Dirty dirty hacks", "Stuff I can do but I decide not to", "https://i.imgur.com/Iw9Nc.jpg", new Intent())
+        );
+        mAdapter.fillWithLorem();
         mRecyclerView.setAdapter(mAdapter);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        fetchAndShowPhotos();
+    }
+
+    private void fetchAndShowPhotos() {
+        MyApplication app = (MyApplication) getApplication();
+        app.flickrSearchService.findPhotos("9e680713fcac819dc4e6b02c3833e6fc", "city+landscape", new Callback<FlickrResponse>() {
+            @Override
+            public void success(FlickrResponse flickrResponse, Response response) {
+                showPhotos(flickrResponse.photos);
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                e("Error retrieving flickr images: %s", error);
+            }
+        });
+    }
+
+    private void showPhotos(FlickrPhotos flickrPhotos) {
+        mAdapter.addPhotos(flickrPhotos.photo);
+    }
 }

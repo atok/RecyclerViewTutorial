@@ -1,10 +1,10 @@
 package com.atok.showoff;
 
-import android.content.Context;
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.CardView;
@@ -17,17 +17,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.atok.showoff.flickr.FlickrPhoto;
-import com.atok.showoff.picasso.PaletteTransformation;
-import com.atok.showoff.picasso.RoundedTransformation;
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
 import com.thedeanda.lorem.Lorem;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static timber.log.Timber.*;
 
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     private List<MainMenuItem> items = new ArrayList<MainMenuItem>();
@@ -92,8 +86,8 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         final MainMenuItem item = items.get(position);
 
-        int bigImageHeight = 500;
-        int smallImageHeight = 200;
+        final int bigCardHeight = 500;
+        final int smallCardHeight = 200;
 
 //        int imageWidth;
 //        if(holder.imageView.getWidth() != 0) {
@@ -108,16 +102,15 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 //        int imageWidth = holder.parentWidth;
 
 
-        int imageHeight;
-
+        final int cardHeight;
         if(item.expanded) {
-            imageHeight = bigImageHeight;
+            cardHeight = bigCardHeight;
         } else {
-            imageHeight = smallImageHeight;
+            cardHeight = smallCardHeight;
         }
 
         RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(holder.root.getLayoutParams());
-        params.height = imageHeight;
+        params.height = cardHeight;
         holder.root.setLayoutParams(params);
 
         holder.titleTextView.setText(item.title);
@@ -125,43 +118,74 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
         holder.subtitleTextView.setVisibility(View.GONE);
 
-        Context context = holder.imageView.getContext();
+        final MenuImageView imageView = (MenuImageView)holder.imageView;
+        imageView.setImageUrl(item.imageUrl, new MenuImageView.PaletteCallback() {
+            @Override
+            public void onPalette(Palette palette) {
+                int textColor = palette.getLightVibrantColor(Color.WHITE);
 
-        Picasso.with(context).load(item.imageUrl)
-                .resize(imageWidth, imageHeight)
-                .centerCrop()
-                .transform(new RoundedTransformation(50, 0))
-                .transform(PaletteTransformation.instance())
+                holder.titleTextView.setTextColor(textColor);
+                holder.subtitleTextView.setTextColor(textColor);
 
-                .into(holder.imageView, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        Bitmap bitmap = ((BitmapDrawable) holder.imageView.getDrawable()).getBitmap();
-                        Palette palette = PaletteTransformation.getPalette(bitmap);
-                        int textColor = palette.getLightVibrantColor(Color.WHITE);
+                int bgColor = palette.getDarkMutedColor(Color.parseColor("#55000000"));
+                int bgColorAlpha = Color.argb(200, Color.red(bgColor), Color.green(bgColor), Color.blue(bgColor));
 
-                        holder.titleTextView.setTextColor(textColor);
-                        holder.subtitleTextView.setTextColor(textColor);
-
-                        int bgColor = palette.getDarkMutedColor(Color.parseColor("#55000000"));
-                        int bgColorAlpha = Color.argb(200, Color.red(bgColor), Color.green(bgColor), Color.blue(bgColor));
-
-                        GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{bgColorAlpha, Color.TRANSPARENT});
-                        holder.titleTextBackground.setBackground(gradientDrawable);
-                    }
-
-                    @Override
-                    public void onError() {
-                        e("Error downloading image");
-                    }
-                });
-
+                GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{bgColorAlpha, Color.TRANSPARENT});
+                holder.titleTextBackground.setBackground(gradientDrawable);
+            }
+        });
+        imageView.loadImage(cardHeight - holder.root.getPaddingTop() - holder.root.getPaddingBottom());
 
         holder.root.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(final View view) {
+
+                final int endHeight;
+                if(item.expanded) {
+                    endHeight = smallCardHeight;
+                } else {
+                    endHeight = bigCardHeight;
+                }
                 item.expanded = !item.expanded;
-                notifyItemChanged(position);
+
+                ValueAnimator sizeAnimator = ValueAnimator.ofInt(view.getMeasuredHeight(), endHeight);
+                sizeAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        int val = (Integer)animation.getAnimatedValue();
+                        ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
+                        layoutParams.height = val;
+                        view.setLayoutParams(layoutParams);
+                    }
+                });
+                sizeAnimator.setDuration(300);
+                sizeAnimator.addListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        if(item.expanded) {
+                            imageView.loadImage(endHeight - view.getPaddingTop() - view.getPaddingBottom());
+                        }
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        if(!item.expanded) {
+                            imageView.loadImage(endHeight - view.getPaddingTop() - view.getPaddingBottom());
+                        }
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {
+
+                    }
+                });
+                sizeAnimator.start();
+
             }
         });
     }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
@@ -31,7 +32,7 @@ public class MainActivity extends Activity {
 
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
-        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setHasFixedSize(false);
 
         // use a linear layout manager
         mLayoutManager = new LinearLayoutManager(this);
@@ -43,7 +44,16 @@ public class MainActivity extends Activity {
                 new MainMenuItem("Dirty dirty hacks", "Stuff I can do but I decide not to", "https://i.imgur.com/Iw9Nc.jpg", new Intent())
         );
         mAdapter.fillWithLorem();
+
         mRecyclerView.setAdapter(mAdapter);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator() {
+            @Override
+            public boolean animateChange(RecyclerView.ViewHolder oldHolder, RecyclerView.ViewHolder newHolder, int fromX, int fromY, int toX, int toY) {
+                e("animateChange");
+
+                return super.animateChange(oldHolder, newHolder, fromX, fromY, toX, toY);
+            }
+        });
     }
 
     @Override

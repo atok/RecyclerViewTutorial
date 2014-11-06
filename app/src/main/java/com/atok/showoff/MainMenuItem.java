@@ -10,6 +10,8 @@ public class MainMenuItem {
     final Intent intent;
     String imageUrl;
 
+    boolean expanded = false;
+
     public MainMenuItem(String title, String subtitle, String url, Intent intent) {
         this.title = title;
         this.subtitle = subtitle;

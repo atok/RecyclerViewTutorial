@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,13 +33,18 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     private List<MainMenuItem> items = new ArrayList<MainMenuItem>();
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        private final CardView root;
+
         private final TextView subtitleTextView;
         private final  TextView titleTextView;
         private final ImageView imageView;
         private final LinearLayout titleTextBackground;
+        private final int parentWidth;
 
-        public ViewHolder(ViewGroup v) {
+        public ViewHolder(ViewGroup v, int parentWidth) {
             super(v);
+            this.parentWidth = parentWidth;
+            root = ((CardView)v.findViewById(R.id.menuItem_card));
             titleTextView = ((TextView) v.findViewById(R.id.menuItem_title));
             subtitleTextView = ((TextView) v.findViewById(R.id.menuItem_subtitle));
             imageView = ((ImageView) v.findViewById(R.id.menuItem_image));
@@ -77,13 +83,42 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     @Override
     public MyAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         ViewGroup v = ((ViewGroup) LayoutInflater.from(parent.getContext()).inflate(R.layout.main_menu_item, parent, false));
-        ViewHolder vh = new ViewHolder(v);
+        int width = parent.getMeasuredWidth();
+        ViewHolder vh = new ViewHolder(v, width);
         return vh;
     }
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        MainMenuItem item = items.get(position);
+        final MainMenuItem item = items.get(position);
+
+        int bigImageHeight = 500;
+        int smallImageHeight = 200;
+
+//        int imageWidth;
+//        if(holder.imageView.getWidth() != 0) {
+        int imageWidth = holder.root.getMeasuredWidth();
+        if(imageWidth == 0) {
+            imageWidth = 300;
+        }
+//        } else {
+//            imageWidth = holder.parentWidth;
+//            e("parent");
+//        }
+//        int imageWidth = holder.parentWidth;
+
+
+        int imageHeight;
+
+        if(item.expanded) {
+            imageHeight = bigImageHeight;
+        } else {
+            imageHeight = smallImageHeight;
+        }
+
+        RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(holder.root.getLayoutParams());
+        params.height = imageHeight;
+        holder.root.setLayoutParams(params);
 
         holder.titleTextView.setText(item.title);
         holder.subtitleTextView.setText(item.subtitle);
@@ -93,10 +128,11 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         Context context = holder.imageView.getContext();
 
         Picasso.with(context).load(item.imageUrl)
-                .fit()
+                .resize(imageWidth, imageHeight)
                 .centerCrop()
-                .transform(new RoundedTransformation(5, 0))
+                .transform(new RoundedTransformation(50, 0))
                 .transform(PaletteTransformation.instance())
+
                 .into(holder.imageView, new Callback() {
                     @Override
                     public void onSuccess() {
@@ -119,6 +155,15 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
                         e("Error downloading image");
                     }
                 });
+
+
+        holder.root.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                item.expanded = !item.expanded;
+                notifyItemChanged(position);
+            }
+        });
     }
 
     @Override

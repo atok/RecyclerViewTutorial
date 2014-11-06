@@ -30,7 +30,7 @@ public class MyApplication extends Application {
     private void configureLogging() {
         if (BuildConfig.DEBUG) {
             Picasso.with(getApplicationContext()).setIndicatorsEnabled(true);
-            Picasso.with(getApplicationContext()).setLoggingEnabled(true);
+            Picasso.with(getApplicationContext()).setLoggingEnabled(false);
 
             Timber.plant(new Timber.DebugTree());
         } else {

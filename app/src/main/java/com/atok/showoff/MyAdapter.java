@@ -16,6 +16,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.atok.showoff.flickr.FlickrPhoto;
+import com.atok.showoff.picasso.PaletteTransformation;
+import com.atok.showoff.picasso.RoundedTransformation;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.thedeanda.lorem.Lorem;
@@ -89,15 +91,21 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         holder.subtitleTextView.setVisibility(View.GONE);
 
         Context context = holder.imageView.getContext();
-        Picasso.with(context).load(item.imageUrl).into(holder.imageView, new Callback() {
-            @Override
-            public void onSuccess() {
-                Bitmap bitmap = ((BitmapDrawable) holder.imageView.getDrawable()).getBitmap();
-                Palette.generateAsync(bitmap, new Palette.PaletteAsyncListener() {
+
+        Picasso.with(context).load(item.imageUrl)
+                .fit()
+                .centerCrop()
+                .transform(new RoundedTransformation(5, 0))
+                .transform(PaletteTransformation.instance())
+                .into(holder.imageView, new Callback() {
                     @Override
-                    public void onGenerated(Palette palette) {
-                        holder.titleTextView.setTextColor(palette.getLightVibrantColor(Color.WHITE));
-                        holder.subtitleTextView.setTextColor(palette.getLightMutedColor(Color.GRAY));
+                    public void onSuccess() {
+                        Bitmap bitmap = ((BitmapDrawable) holder.imageView.getDrawable()).getBitmap();
+                        Palette palette = PaletteTransformation.getPalette(bitmap);
+                        int textColor = palette.getLightVibrantColor(Color.WHITE);
+
+                        holder.titleTextView.setTextColor(textColor);
+                        holder.subtitleTextView.setTextColor(textColor);
 
                         int bgColor = palette.getDarkMutedColor(Color.parseColor("#55000000"));
                         int bgColorAlpha = Color.argb(200, Color.red(bgColor), Color.green(bgColor), Color.blue(bgColor));
@@ -105,14 +113,12 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
                         GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{bgColorAlpha, Color.TRANSPARENT});
                         holder.titleTextBackground.setBackground(gradientDrawable);
                     }
-                });
-            }
 
-            @Override
-            public void onError() {
-                e("Error downloading image");
-            }
-        });
+                    @Override
+                    public void onError() {
+                        e("Error downloading image");
+                    }
+                });
     }
 
     @Override

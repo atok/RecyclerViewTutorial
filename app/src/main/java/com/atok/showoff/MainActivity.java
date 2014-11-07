@@ -64,7 +64,7 @@ public class MainActivity extends Activity {
 
     private void fetchAndShowPhotos() {
         MyApplication app = (MyApplication) getApplication();
-        app.flickrSearchService.findPhotos("9e680713fcac819dc4e6b02c3833e6fc", "city+landscape", new Callback<FlickrResponse>() {
+        app.flickrSearchService.findPhotos("f00ab05b096ee36531f6dfd0e6c149fa", "city+landscape", new Callback<FlickrResponse>() {
             @Override
             public void success(FlickrResponse flickrResponse, Response response) {
                 showPhotos(flickrResponse.photos);

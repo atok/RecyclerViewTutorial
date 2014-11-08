@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.CardView;
@@ -16,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.atok.showoff.flickr.FlickrPhoto;
+import com.google.common.base.Optional;
 import com.thedeanda.lorem.Lorem;
 
 import java.util.ArrayList;
@@ -102,7 +104,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     public void addPhotos(List<FlickrPhoto> photos) {
         for (int i = 0; i < items.size() && i < photos.size(); i++) {
-            items.get(i).imageUrl = photos.get(i).getImageUrl();
+            items.get(i).imageUrl = Optional.of(photos.get(i).getImageUrl());
         }
         notifyDataSetChanged();
     }
@@ -114,29 +116,36 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     public void fillWithLorem() {
         for(int i = 0; i < 20; i++) {
-            items.add(new MainMenuItem(Lorem.getTitle(2, 4), Lorem.getWords(10, 15), "https://i.imgur.com/zlKZE1v.jpg", new Intent()));
+            items.add(new MainMenuItem(Lorem.getTitle(2, 4), Lorem.getWords(10, 15), null, new Intent()));
         }
         notifyDataSetChanged();
     }
 
     private void loadImage(final ViewHolder holder, MainMenuItem item, final int cardHeight) {
         final MenuImageView imageView = (MenuImageView)holder.imageView;
-        imageView.setImageUrl(item.imageUrl, new MenuImageView.PaletteCallback() {
-            @Override
-            public void onPalette(Palette palette) {
-                int textColor = palette.getLightVibrantColor(Color.WHITE);
 
-                holder.titleTextView.setTextColor(textColor);
-                holder.subtitleTextView.setTextColor(textColor);
+        if(item.imageUrl.isPresent()) {
+            imageView.setImageUrl(item.imageUrl.get(), new MenuImageView.PaletteCallback() {
+                @Override
+                public void onPalette(Palette palette) {
+                    int textColor = palette.getLightVibrantColor(Color.WHITE);
 
-                int bgColor = palette.getDarkMutedColor(Color.parseColor("#55000000"));
-                int bgColorAlpha = Color.argb(200, Color.red(bgColor), Color.green(bgColor), Color.blue(bgColor));
+                    holder.titleTextView.setTextColor(textColor);
+                    holder.subtitleTextView.setTextColor(textColor);
 
-                GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{bgColorAlpha, Color.TRANSPARENT});
-                holder.titleTextBackground.setBackground(gradientDrawable);
-            }
-        });
-        imageView.loadImage(cardHeight - holder.root.getPaddingTop() - holder.root.getPaddingBottom());
+                    int bgColor = palette.getDarkMutedColor(Color.TRANSPARENT);
+                    int bgColorAlpha = Color.argb(200, Color.red(bgColor), Color.green(bgColor), Color.blue(bgColor));
+
+//                    GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[]{bgColorAlpha, Color.TRANSPARENT});
+//                    holder.titleTextBackground.setBackground(gradientDrawable);
+                }
+            });
+            imageView.loadImage(cardHeight - holder.root.getPaddingTop() - holder.root.getPaddingBottom());
+        } else {
+            imageView.setImageDrawable(new ColorDrawable(Color.WHITE));
+        }
+
+
     }
 
     private void animateCard(final View containerCardView, final MainMenuItem item, final MenuImageView imageView, boolean toBeExpanded) {

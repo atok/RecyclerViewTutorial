@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
         // specify an adapter (see also next example)
         mAdapter = new MyAdapter();
         mAdapter.addMenuItems(
-                new MainMenuItem("Dirty dirty hacks", "Stuff I can do but I decide not to", "https://i.imgur.com/Iw9Nc.jpg", new Intent())
+                new MainMenuItem("Dirty dirty hacks", "Stuff I can do but I decide not to", null, new Intent())
         );
         mAdapter.fillWithLorem();
 
@@ -64,10 +64,14 @@ public class MainActivity extends Activity {
 
     private void fetchAndShowPhotos() {
         MyApplication app = (MyApplication) getApplication();
-        app.flickrSearchService.findPhotos("f00ab05b096ee36531f6dfd0e6c149fa", "city+landscape", new Callback<FlickrResponse>() {
+        app.flickrSearchService.findPhotos("38d8f9f27eeb0f64c16f33021072b247", "city+landscape", new Callback<FlickrResponse>() {
             @Override
             public void success(FlickrResponse flickrResponse, Response response) {
-                showPhotos(flickrResponse.photos);
+                if(flickrResponse.photos.isPresent()) {
+                    showPhotos(flickrResponse.photos.get());
+                } else {
+                    e("Error retrieving flickr images");
+                }
             }
 
             @Override

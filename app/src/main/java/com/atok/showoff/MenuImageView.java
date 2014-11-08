@@ -2,7 +2,6 @@ package com.atok.showoff;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 
 import android.support.annotation.Nullable;
@@ -10,8 +9,7 @@ import android.support.v7.graphics.Palette;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
-import com.atok.showoff.picasso.BlurTransformation;
-import com.atok.showoff.picasso.TextBackgroundGradientTransformation;
+import com.atok.showoff.picasso.BlurStripeTransformation;
 import com.atok.showoff.picasso.VerticalGrowingPicassoDrawable;
 import com.atok.showoff.picasso.PaletteTransformation;
 import com.atok.showoff.picasso.RoundedTransformation;
@@ -67,7 +65,7 @@ public class MenuImageView extends ImageView implements Target {
                 .resize(width, height)
                 .centerCrop()
 //                .transform(new TextBackgroundGradientTransformation(50))
-                .transform(new BlurTransformation(getContext()))
+                .transform(new BlurStripeTransformation(getContext()))
                 .transform(new RoundedTransformation(8, 0))
                 .transform(PaletteTransformation.instance());
 

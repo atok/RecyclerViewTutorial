@@ -2,6 +2,8 @@ package com.atok.showoff;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 
 import android.support.annotation.Nullable;
@@ -22,6 +24,8 @@ import com.squareup.picasso.Target;
 public class MenuImageView extends ImageView implements Target {
 
     String url;
+    boolean newImage = true;
+
     PaletteCallback paletteCallback = null;
     boolean loadAfterMeasure = false;
 
@@ -49,6 +53,10 @@ public class MenuImageView extends ImageView implements Target {
     }
 
     public void setImageUrl(@Nullable String url, final PaletteCallback paletteCallback) {
+        if(this.url != null && !this.url.equals(url)) {
+            this.newImage = true;
+        }
+
         this.url = url;
         this.paletteCallback = paletteCallback;
     }
@@ -59,6 +67,11 @@ public class MenuImageView extends ImageView implements Target {
             requestedImageHeight = height;
             loadAfterMeasure = true;
             return;
+        }
+
+        if(newImage) {
+            newImage = false;
+            setImageDrawable(new ColorDrawable(Color.WHITE));
         }
 
         float blurStartInPixels = Utils.dpToPixels(getResources(), 15);

@@ -26,6 +26,8 @@
         <TextView
             android:layout_margin="10dp"
             android:textSize="20sp"
+            android:lines="1"
+            android:singleLine="true"
             tools:text="Dirty dirty hacks"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

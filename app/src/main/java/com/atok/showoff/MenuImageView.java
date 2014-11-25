@@ -13,6 +13,7 @@ import com.atok.showoff.picasso.BlurStripeTransformation;
 import com.atok.showoff.picasso.VerticalGrowingPicassoDrawable;
 import com.atok.showoff.picasso.PaletteTransformation;
 import com.atok.showoff.picasso.RoundedTransformation;
+import com.atok.showoff.utils.Utils;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 import com.squareup.picasso.Target;
@@ -60,12 +61,15 @@ public class MenuImageView extends ImageView implements Target {
             return;
         }
 
+        float blurStartInPixels = Utils.dpToPixels(getResources(), 15);
+        float blurEndInPixels = Utils.dpToPixels(getResources(), 45);
+
         setScaleType(ScaleType.CENTER);
         RequestCreator transform = Picasso.with(getContext()).load(url)
                 .resize(width, height)
                 .centerCrop()
 //                .transform(new TextBackgroundGradientTransformation(50))
-                .transform(new BlurStripeTransformation(getContext()))
+                .transform(new BlurStripeTransformation(getContext(), blurStartInPixels, blurEndInPixels))
                 .transform(new RoundedTransformation(8, 0))
                 .transform(PaletteTransformation.instance());
 

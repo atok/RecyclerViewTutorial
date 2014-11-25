@@ -3,12 +3,14 @@ package com.atok.showoff;
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.atok.showoff.flickr.FlickrPhoto;
+import com.atok.showoff.utils.Utils;
 import com.google.common.base.Optional;
 import com.thedeanda.lorem.Lorem;
 
@@ -73,9 +76,13 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         } else {
             cardHeight = smallCardHeight;
         }
+        Resources r = holder.imageView.getContext().getResources();
 
         RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(holder.root.getLayoutParams());
         params.height = cardHeight;
+        params.bottomMargin = Utils.dpToPixels(r, 5);
+        params.leftMargin = Utils.dpToPixels(r, 5);
+        params.rightMargin = Utils.dpToPixels(r, 5);
         holder.root.setLayoutParams(params);
 
         holder.titleTextView.setText(item.title);
